@@ -18,8 +18,8 @@ const Navbar = () => {
     ];
 
     return (
-        <div className="w-full max-w-7xl mx-auto px-4 sticky top-0 z-[9999]">
-            {/* <div className="navbar rounded-xl my-4 px-3 md:px-5 gap-2 md:gap-4 text-slate-300 border border-slate-800 shadow-xl min-h-[4rem] backdrop-blur-md">
+        <div className="container mx-auto px-4 sticky top-0 z-[9999]">
+            <div className="navbar rounded-xl my-4 px-3 md:px-5 gap-2 md:gap-4 text-slate-300 border border-slate-800 shadow-xl min-h-[4rem] backdrop-blur-md">
                 <div className="flex-1 lg:flex-none">
                     <Link href="/" className="flex items-center gap-1.5 md:gap-2 hover:opacity-90 transition-opacity whitespace-nowrap">
                         <Image
@@ -147,7 +147,7 @@ const Navbar = () => {
                     </div>
 
                 </div>
-            </div> */}
+            </div>
         </div>
     );
 };
