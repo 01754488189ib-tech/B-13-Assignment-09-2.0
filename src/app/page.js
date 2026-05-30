@@ -1,5 +1,7 @@
+import AdoptionProcess from "@/components/AdoptionProcess";
 import Banner from "@/components/Banner";
 import CallToAction from "@/components/CallToAction";
+import Patnest from "@/components/Patnest";
 import Petcare from "@/components/Petcare";
 import Tabs from "@/components/Tabs";
 import Image from "next/image";
@@ -9,9 +11,9 @@ export default function Home() {
     <div>
       <Banner />
       <Tabs />
-      {/* <Petcare /> */}
-      {/* <Adoption /> */}
-      {/* <Patnest /> */}
+      <Petcare />
+      <AdoptionProcess />
+      <Patnest />
       {/* <SuccessStories /> */}
       {/* <SimplePetFeature /> */}
       <CallToAction />
