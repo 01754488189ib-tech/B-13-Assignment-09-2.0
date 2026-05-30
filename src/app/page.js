@@ -1,11 +1,19 @@
 import Banner from "@/components/Banner";
+import CallToAction from "@/components/CallToAction";
+import Tabs from "@/components/Tabs";
 import Image from "next/image";
 
 export default function Home() {
   return (
     <div>
       <Banner />
-      hello world
+      <Tabs />
+      {/* <Petcare /> */}
+      {/* <Adoption /> */}
+      {/* <Patnest /> */}
+      {/* <SuccessStories /> */}
+      {/* <SimplePetFeature /> */}
+      <CallToAction />
     </div>
   );
 }
