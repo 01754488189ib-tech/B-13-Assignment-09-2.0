@@ -1,9 +1,9 @@
 "use client";
 
+import AllPetPage from '@/app/all-pet/page';
 import React from 'react';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 // import TopPetPage from '../app/top-pet/page';
-// import AllPetPage from '../app/all-pet/page';
 
 const PetTabs = () => {
     return (
@@ -26,7 +26,7 @@ const PetTabs = () => {
 
                 <TabPanel className="outline-none focus:outline-none">
                     <div className="animate-in fade-in slide-in-from-bottom-3 duration-500">
-                        {/* <AllPetPage /> */}
+                        <AllPetPage />
                     </div>
                 </TabPanel>
 

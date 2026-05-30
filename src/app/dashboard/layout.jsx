@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { FaPaw, FaListUl, FaPlusCircle, FaHeart, FaUserAlt } from 'react-icons/fa';
+import { IoGitPullRequestSharp } from 'react-icons/io5';
 
 const DashboardLayout = ({ children }) => {
     return (
@@ -55,6 +56,15 @@ const DashboardLayout = ({ children }) => {
                                 >
                                     <FaListUl className="text-lg" />
                                     <span>My Listings</span>
+                                </Link>
+                            </li>
+                            <li>
+                                <Link
+                                    href="/dashboard/my-requests"
+                                    className="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 hover:bg-[#FF9505]/10 hover:text-[#FF9505] focus:bg-[#FF9505] focus:text-black active:scale-95"
+                                >
+                                    <IoGitPullRequestSharp className="text-lg" />
+                                    <span>My Requests</span>
                                 </Link>
                             </li>
                             <li>

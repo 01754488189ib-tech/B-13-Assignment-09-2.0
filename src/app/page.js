@@ -5,7 +5,6 @@ import Petcare from "@/components/Petcare";
 import SimplePetFeature from "@/components/SimplePetFeature";
 import SuccessStories from "@/components/SuccessStories";
 import Tabs from "@/components/Tabs";
-
 export default function Home() {
   return (
     <div>
