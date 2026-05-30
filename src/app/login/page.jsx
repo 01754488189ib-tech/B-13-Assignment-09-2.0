@@ -7,9 +7,12 @@ import { FcGoogle } from 'react-icons/fc';
 import Link from 'next/link';
 
 const LoginPage = () => {
+    const onSubmit = async (e) => {
+        e.preventDefault();
+    }
     return (
         <div className="flex min-h-screen items-center justify-center bg-[#0f172a] p-4 text-white relative overflow-hidden">
-            <Form className="flex w-96 flex-col gap-4">
+            <Form className="flex w-96 flex-col gap-4" onSubmit={onSubmit}>
                 <Link href="/register" className="text-xs text-slate-500 mt-2 text-center hover:text-slate-300 transition-colors duration-300">
                     Already have an account? <span className="font-bold text-[#FF9505] cursor-pointer hover:text-blue-500">Register</span> here
                 </Link>
