@@ -6,6 +6,7 @@ import { FcGoogle } from 'react-icons/fc';
 import Link from 'next/link';
 import { CiLogin } from 'react-icons/ci';
 import { authClient } from "@/lib/auth-client";
+import { redirect } from "next/navigation";
 
 const RegisterPage = () => {
 
@@ -22,6 +23,12 @@ const RegisterPage = () => {
             image: user.image
         })
         console.log(data, error);
+        if (data) {
+            redirect("/");
+        }
+        if (error) {
+            alert(error.message);
+        }
         
     }
 
@@ -91,7 +98,7 @@ const RegisterPage = () => {
                 <div className="flex gap-2">
                     <Button type="submit">
                         <Check />
-                        Submit
+                        Create Account
                     </Button>
                     <Button
                         className="w-full h-11 rounded-xl border border-slate-800 bg-[#070b19] hover:bg-slate-800/40 hover:border-slate-700 text-slate-300 font-semibold text-sm transition-all flex items-center justify-center gap-2 mt-2">
