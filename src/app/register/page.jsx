@@ -1,21 +1,34 @@
 'use client'
-import React from 'react'
 import { Check } from "@gravity-ui/icons";
 import { Button, Description, FieldError, Form, Input, Label, TextField } from "@heroui/react";
 
 import { FcGoogle } from 'react-icons/fc';
 import Link from 'next/link';
+import { CiLogin } from 'react-icons/ci';
+import { authClient } from "@/lib/auth-client";
 
 const RegisterPage = () => {
 
     const onSubmit = async (e) => {
         e.preventDefault();
+
+        const formData = new FormData(e.currentTarget);
+        const user = Object.fromEntries(formData.entries());
+
+        const { data, error } = await authClient.signUp.email({
+            email: user.email,
+            password: user.password,
+            name: user.name,
+            image: user.image
+        })
+        console.log(data, error);
+        
     }
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-[#0f172a] p-4 text-white relative overflow-hidden">
             <Link href="/login" className="text-xs text-slate-500 mt-2 text-center hover:text-slate-300 transition-colors duration-300">
-                Already have an account? <span className="font-bold text-[#FF9505] cursor-pointer hover:text-blue-500">Login</span> here
+                Already have an account? <span className="font-bold text-[#FF9505] cursor-pointer hover:text-blue-500">Login <CiLogin /></span> here
             </Link>
             <Form className="flex w-96 flex-col gap-4" onSubmit={onSubmit}>
 
