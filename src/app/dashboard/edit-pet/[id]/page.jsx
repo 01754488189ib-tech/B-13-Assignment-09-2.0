@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
+import { authClient } from '@/lib/auth-client';
 import toast from 'react-hot-toast';
 import LoadingPage from '@/components/LoadingPage';
 
@@ -10,6 +11,9 @@ const EditPet = ({ params }) => {
     const id = resolvedParams.id;
 
     const router = useRouter();
+    const { data: session, isPending: sessionLoading } = authClient.useSession();
+    const myEmail = session?.user?.email || "";
+
     const [pet, setPet] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -19,20 +23,29 @@ const EditPet = ({ params }) => {
                 const response = await fetch(`http://localhost:5000/pets/${id}`);
                 if (response.ok) {
                     const data = await response.json();
+
+                    if (data.ownerEmail !== myEmail) {
+                        toast.error("Unauthorized access! This listing is not yours.");
+                        router.push('/dashboard/my-listings');
+                        return;
+                    }
+
                     setPet(data);
                 } else {
                     toast.error("Pet data not found!");
                 }
             } catch (error) {
-                console.error("Error:", error);
+                console.error("Error fetching pet for update:", error);
                 toast.error("Failed to load pet data");
             } finally {
                 setIsLoading(false);
             }
         };
 
-        if (id) fetchPetDetails();
-    }, [id]);
+        if (id && !sessionLoading && myEmail) {
+            fetchPetDetails();
+        }
+    }, [id, router, myEmail, sessionLoading]);
 
     const handleUpdatePet = async (e) => {
         e.preventDefault();
@@ -54,17 +67,19 @@ const EditPet = ({ params }) => {
         };
 
         try {
-            const response = await fetch(`http://localhost:5000/pets/${id}`, {
+            const response = await fetch(`http://localhost:5000/pets/${id}?userEmail=${myEmail}`, {
                 method: 'PUT',
                 headers: { 'content-type': 'application/json' },
-                body: JSON.stringify(updatedPet)
+                body: JSON.stringify(updatedPet),
+                credentials: 'include'
             });
 
             if (response.ok) {
                 toast.success("Pet updated successfully!");
                 router.push('/dashboard/my-listings');
             } else {
-                toast.error("Failed to update pet.");
+                const errData = await response.json();
+                toast.error(errData.error || "Failed to update pet.");
             }
         } catch (error) {
             console.error("Update error:", error);
@@ -72,8 +87,19 @@ const EditPet = ({ params }) => {
         }
     };
 
-    if (isLoading) return <div className="text-center py-20 text-slate-400 animate-pulse"><LoadingPage /></div>;
-    if (!pet) return <div className="text-center py-20 text-rose-400">No data found.</div>;
+    if (sessionLoading || isLoading) {
+        return (
+            <div className="text-center py-20 text-slate-400">
+                <LoadingPage />
+            </div>
+        );
+    }
+
+    if (!pet) {
+        return (
+            <div className="text-center py-20 text-rose-400">No data found.</div>
+        );
+    }
 
     return (
         <div className="w-full max-w-4xl mx-auto px-4 py-8 text-slate-300 min-h-screen">
@@ -207,7 +233,7 @@ const EditPet = ({ params }) => {
                         rows="4"
                         defaultValue={pet.description}
                         required
-                        className="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-[#FF9505]"
+                        className="w-full bg-[#0b1329] border border-slate-800 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-[#FF9505]"
                     ></textarea>
                 </div>
 
@@ -224,14 +250,14 @@ const EditPet = ({ params }) => {
                 <div className="flex gap-4 pt-4">
                     <button
                         type="submit"
-                        className="flex-1 bg-[#FF9505] text-black py-3 rounded-xl text-sm font-bold hover:bg-[#ff9d1c] transition-all"
+                        className="flex-1 bg-[#FF9505] text-black py-3 rounded-xl text-sm font-bold hover:bg-[#ff9d1c] transition-all cursor-pointer"
                     >
                         Update Pet Profile
                     </button>
                     <button
                         type="button"
                         onClick={() => router.push('/dashboard/my-listings')}
-                        className="px-6 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-medium transition-all"
+                        className="px-6 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-medium transition-all cursor-pointer"
                     >
                         Cancel
                     </button>

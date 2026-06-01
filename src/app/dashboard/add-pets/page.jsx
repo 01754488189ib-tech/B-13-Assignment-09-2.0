@@ -2,10 +2,16 @@
 
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
+import { authClient } from '@/lib/auth-client';
 import { TextField, Label, Input, FieldError, Select, ListBox, TextArea, Button } from "@heroui/react";
 
 const AddPetsPage = () => {
     const [isPending, setIsPending] = useState(false);
+    const router = useRouter();
+
+    const { data: session } = authClient.useSession();
+    const myEmail = session?.user?.email || "";
 
     const onSubmit = async (e) => {
         e.preventDefault();
@@ -14,22 +20,25 @@ const AddPetsPage = () => {
 
         const formData = new FormData(form);
         const petData = Object.fromEntries(formData.entries());
-        console.log("New Pet Data:", petData);
+
+        petData.ownerEmail = myEmail;
+        petData.status = "available";
 
         try {
             const response = await fetch('http://localhost:5000/pets', {
                 method: 'POST',
                 headers: { 'content-type': 'application/json' },
-                body: JSON.stringify(petData)
+                body: JSON.stringify(petData),
+                credentials: 'include'
             });
 
-            const result = await response.json();
-
             if (response.ok) {
-                toast.success(result.message || "Pet added successfully!");
+                toast.success("Pet added successfully!");
                 form.reset();
+                router.push('/dashboard/my-listings');
             } else {
-                toast.error(result.message || "Failed to add pet. Please try again.");
+                const resData = await response.json();
+                toast.error(resData.message || "Failed to add pet. Please try again.");
             }
         } catch (error) {
             console.error("Error adding pet:", error);
@@ -92,7 +101,7 @@ const AddPetsPage = () => {
                     </TextField>
 
                     <TextField name="age" isRequired>
-                        <Label className="text-slate-300 font-medium mb-2 block">Age</Label>
+                        <Label className="text-slate-300 font-medium mb-2 block">Age (Years)</Label>
                         <Input
                             type="number"
                             min="0"
@@ -159,6 +168,7 @@ const AddPetsPage = () => {
                             </Select.Popover>
                         </Select>
                     </div>
+
                     <div>
                         <Select
                             name="vaccinationStatus"
@@ -196,10 +206,10 @@ const AddPetsPage = () => {
                     </TextField>
 
                     <div className="md:col-span-2">
-                        <TextField name="ownerEmail">
+                        <div>
                             <Label className="text-slate-500 font-medium mb-2 block">Owner Email (Read Only)</Label>
-                            <Input type="email" value="01754488189ib@gmail.com" readOnly className="rounded-2xl w-full bg-[#1e293b]/30 border border-slate-800 text-slate-500 p-3 opacity-70 cursor-not-allowed" />
-                        </TextField>
+                            <input type="email" value={myEmail} readOnly className="rounded-2xl w-full bg-[#1e293b]/30 border border-slate-800 text-slate-500 p-3 opacity-70 cursor-not-allowed outline-none text-sm" />
+                        </div>
                     </div>
 
                     <div className="md:col-span-2">
@@ -213,10 +223,10 @@ const AddPetsPage = () => {
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
-                    <Button type="button" className="w-full sm:w-auto px-6 py-3 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 transition-colors">
+                    <Button type="button" onClick={() => router.push('/dashboard/my-listings')} className="w-full sm:w-auto px-6 py-3 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 transition-colors cursor-pointer">
                         Cancel
                     </Button>
-                    <Button type="submit" isLoading={isPending} className="w-full sm:flex-1 py-3 rounded-xl bg-[#FF9505] text-black font-bold shadow-lg shadow-[#FF9505]/10 hover:bg-[#ff9d1c] transition-all">
+                    <Button type="submit" isLoading={isPending} className="w-full sm:flex-1 py-3 rounded-xl bg-[#FF9505] text-black font-bold shadow-lg shadow-[#FF9505]/10 hover:bg-[#ff9d1c] transition-all cursor-pointer">
                         {isPending ? "Adding Pet..." : "Add Pet"}
                     </Button>
                 </div>

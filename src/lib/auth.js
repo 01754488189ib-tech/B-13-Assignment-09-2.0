@@ -10,6 +10,19 @@ export const auth = betterAuth({
         client
     }),
     emailAndPassword: {
-        enabled: true,
+        enabled: true
+    },
+    account: {
+        accountLinking: {
+            enabled: true,
+            autoLink: true,
+            trustedProviders: ["google"],
+        }
+    },
+    socialProviders: {
+        google: {
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        },
     }
 });

@@ -42,9 +42,7 @@ const Patnest = () => {
             <div className="max-w-6xl mx-auto">
                 <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-slate-800 pb-10 mb-12 gap-6">
                     <div className="max-w-xl space-y-3">
-                        <span className="text-[#FF9505] text-xs font-bold uppercase tracking-widest block">
-                            Why Choose Us
-                        </span>
+                        <span className="text-[#FF9505] text-xs font-semibold uppercase tracking-wider bg-[#FF9505]/10 px-3 py-1 rounded-full inline-block mb-4">Why Choose Us</span>
                         <h2 className="text-3xl md:text-4xl font-extrabold text-white leading-tight">
                             একটি দায়িত্বশীল পরিবার গড়ে <br />
                             তুলুন <span className="text-[#FF9505]">আত্মবিশ্বাসের</span> সাথে
@@ -58,8 +56,7 @@ const Patnest = () => {
                     {highlights.map((item) => (
                         <div
                             key={item.id}
-                            className={`bg-gradient-to-br ${item.color} border border-slate-800/80 rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 hover:border-slate-700 hover:scale-[1.02] group`}
-                        >
+                            className={`bg-gradient-to-br ${item.color} border border-slate-800/80 rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 hover:border-slate-700 hover:scale-[1.02] group`}>
                             <div>
                                 <div className={`w-12 h-12 rounded-xl bg-[#0f172a] ${item.iconColor} text-2xl flex items-center justify-center border border-slate-800 mb-6 transition-transform duration-300 group-hover:rotate-6`}>
                                     {item.icon}

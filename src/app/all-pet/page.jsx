@@ -1,164 +1,190 @@
 "use client";
-import LoadingPage from '@/components/LoadingPage';
-import Image from 'next/image';
-import Link from 'next/link';
-import React, { useEffect, useState } from 'react';
-import { PiMapPinLineDuotone } from 'react-icons/pi';
-import { TbCurrencyDollar } from 'react-icons/tb';
 
-const AllPetPage = () => {
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { FaSearch, FaMapMarkerAlt, FaFilter, FaTimes } from 'react-icons/fa';
+import LoadingPage from '@/components/LoadingPage';
+
+const AllPetsPage = () => {
     const [pets, setPets] = useState([]);
     const [loading, setLoading] = useState(true);
-
-    const [searchTerm, setSearchTerm] = useState("");
+    const [search, setSearch] = useState('');
     const [selectedSpecies, setSelectedSpecies] = useState([]);
 
-    const categories = ["Dog", "Cat", "Bird", "Rabbit", "Other"];
+    const speciesOptions = ['Dog', 'Cat', 'Bird', 'Rabbit', 'Others'];
 
-    useEffect(() => {
-        setLoading(true);
-
-        let url = `http://localhost:5000/pets?search=${searchTerm}`;
-        if (selectedSpecies.length > 0) {
-            url += `&species=${selectedSpecies.join(",")}`;
-        }
-
-        fetch(url)
-            .then((res) => res.json())
-            .then((data) => {
-                setPets(data);
-                setLoading(false);
-            })
-            .catch((err) => {
-                console.error("Data fetching error:", err);
-                setLoading(false);
-            });
-    }, [searchTerm, selectedSpecies]);
-
-    const handleSpeciesChange = (e) => {
-        const value = e.target.value;
-        if (value === "All") {
-            setSelectedSpecies([]);
+    const handleSpeciesSelect = (species) => {
+        if (selectedSpecies.includes(species)) {
+            setSelectedSpecies(selectedSpecies.filter(item => item !== species));
         } else {
-            setSelectedSpecies([value]);
+            setSelectedSpecies([...selectedSpecies, species]);
         }
     };
 
+    const clearFilters = () => {
+        setSearch('');
+        setSelectedSpecies([]);
+    };
+
+    useEffect(() => {
+        const fetchPets = async () => {
+            setLoading(true);
+            try {
+                const speciesParam = selectedSpecies.length > 0 ? `&species=${selectedSpecies.join(',')}` : '';
+                const res = await fetch(`http://localhost:5000/pets?search=${search}${speciesParam}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setPets(data);
+                }
+            } catch (err) {
+                console.error("Error loading pet list:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const timer = setTimeout(() => {
+            fetchPets();
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [search, selectedSpecies]);
+
     return (
-        <div className="p-4 md:p-8 border border-slate-800 bg-[#0f172a] rounded-2xl shadow-xl mx-auto">
+        <div className="min-h-screen bg-[#0f172a] text-slate-300 py-12 px-4 md:px-8 font-sans">
+            <div className="max-w-7xl mx-auto">
+                <header className="text-center max-w-2xl mx-auto mb-12">
+                    <span className="text-[#FF9505] text-xs font-semibold uppercase tracking-wider bg-[#FF9505]/10 px-3 py-1 rounded-full inline-block mb-3">
+                        Our Companions
+                    </span>
+                    <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
+                        Find Your Ideal <span className="text-[#FF9505]">Pet Companion</span>
+                    </h1>
+                    <p className="text-slate-400 text-sm md:text-base">
+                        Browse through all pets currently available for adoption. Filter by species or search by name to find your perfect match.
+                    </p>
+                </header>
 
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-                <div>
-                    <h2 className="text-2xl font-black text-white">All Available Pets</h2>
-                    <p className="text-slate-500 text-xs md:text-sm mt-1">Find your new furry or feathered best friend</p>
+                <div className="bg-[#0b1329] border border-slate-800 rounded-2xl p-6 mb-10 shadow-xl space-y-6">
+                    <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+                        <div className="relative w-full md:max-w-md">
+                            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
+                                <FaSearch className="text-sm" />
+                            </span>
+                            <input
+                                type="text"
+                                placeholder="Search pets by name..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className="w-full bg-[#0f172a] border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-[#FF9505] transition-colors"
+                            />
+                        </div>
+
+                        {(search || selectedSpecies.length > 0) && (
+                            <button
+                                onClick={clearFilters}
+                                className="flex items-center gap-2 text-xs font-bold text-rose-400 hover:text-rose-300 transition-colors bg-rose-500/10 border border-rose-500/20 px-4 py-2 rounded-xl cursor-pointer"
+                            >
+                                <FaTimes className="text-xs" /> Clear Filters
+                            </button>
+                        )}
+                    </div>
+
+                    <div>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <FaFilter className="text-[#FF9505] text-xs" /> Filter by Species
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                            {speciesOptions.map((species) => {
+                                const isSelected = selectedSpecies.includes(species);
+                                return (
+                                    <button
+                                        key={species}
+                                        onClick={() => handleSpeciesSelect(species)}
+                                        className={`px-4 py-2 rounded-xl text-xs font-semibold border transition-all duration-200 cursor-pointer ${isSelected
+                                                ? 'bg-[#FF9505] text-black border-[#FF9505] shadow-lg shadow-[#FF9505]/10'
+                                                : 'bg-[#0f172a] text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200'
+                                            }`}
+                                    >
+                                        {species}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center gap-2 w-full max-w-md border border-slate-700 bg-[#0f172a] rounded-lg p-1">
-                    <input
-                        type="search"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full bg-transparent px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none"
-                        placeholder="Search pets by name..."
-                    />
+                {loading ? (
+                    <div className="py-20">
+                        <LoadingPage />
+                    </div>
+                ) : pets.length === 0 ? (
+                    <div className="text-center py-20 bg-[#0b1329]/50 border border-slate-800 rounded-2xl">
+                        <p className="text-slate-500 text-sm">No pets found matching your criteria.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {pets.map((pet) => (
+                            <div
+                                key={pet._id}
+                                className="bg-[#0b1329] border border-slate-800 rounded-2xl overflow-hidden shadow-xl hover:border-slate-700 hover:scale-[1.01] transition-all duration-200 flex flex-col justify-between"
+                            >
+                                <div className="relative h-64 w-full bg-[#0f172a]">
+                                    <img
+                                        src={pet.imageUrl || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1'}
+                                        alt={pet.petName}
+                                        className="object-cover w-full h-full"
+                                    />
+                                    {pet.status === "adopted" && (
+                                        <div className="absolute inset-0 bg-black/65 backdrop-blur-sm flex items-center justify-center">
+                                            <span className="bg-[#FF9505] text-black text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full border border-[#FF9505]/20 shadow-lg">
+                                                Adopted
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="p-6 flex-1 flex flex-col justify-between">
+                                    <div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h3 className="text-xl font-bold text-white truncate max-w-[150px]">{pet.petName}</h3>
+                                            <span className="bg-[#FF9505]/10 text-[#FF9505] text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md border border-[#FF9505]/20">
+                                                {pet.species}
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-slate-500 mb-4">{pet.breed || "Unknown Breed"}</p>
 
-                    <div className="hidden sm:block h-6 w-[1px] bg-slate-700"></div>
-
-                    <select
-                        onChange={handleSpeciesChange}
-                        className="w-full sm:w-auto bg-transparent px-3 py-2 text-sm text-slate-300 font-medium cursor-pointer focus:outline-none"
-                    >
-                        <option value="All" className="bg-[#0f172a] text-slate-200">
-                            All Species
-                        </option>
-                        {categories.map((species) => (
-                            <option key={species} value={species} className="bg-[#0f172a] text-slate-200">
-                                {species}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-2">
-
-                <div className="lg:col-span-4">
-                    {loading ? (
-                        <div className="text-center text-slate-500 py-20 animate-pulse font-semibold">
-                            <LoadingPage />
-                        </div>
-                    ) : pets.length === 0 ? (
-                        <div className="text-center text-slate-500 py-20 border border-dashed border-slate-800 rounded-2xl">
-                            No pets found matching your criteria.
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                            {pets.map((pet) => (
-                                <div
-                                    key={pet._id}
-                                    className="flex flex-col justify-between border border-slate-800 rounded-2xl bg-[#0b1329] shadow-xl overflow-hidden group transition-all duration-300 hover:border-[#FF9505]/40"
-                                >
-                                    <div className="relative h-52 w-full overflow-hidden bg-[#0f172a]">
-                                        <Image
-                                            src={pet.imageUrl}
-                                            alt={pet.petName}
-                                            fill
-                                            className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                        />
-                                        <span className="absolute top-3 left-3 bg-[#FF9505]/10 text-[#FF9505] text-xs font-semibold px-2.5 py-1 rounded-md backdrop-blur-sm border border-[#FF9505]/20">
-                                            {pet.species}
-                                        </span>
-                                        <span className={`absolute top-3 right-3 text-xs font-semibold px-2.5 py-1 rounded-md backdrop-blur-sm border ${pet.status === "adopted"
-                                            ? "bg-rose-500/10 text-rose-400 border-rose-500/20"
-                                            : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                                            }`}>
-                                            {pet.status === "adopted" ? "Adopted" : "Available"}
-                                        </span>
+                                        <div className="grid grid-cols-2 gap-4 text-xs text-slate-400 mb-6 border-t border-slate-800/60 pt-4">
+                                            <p><span className="text-slate-500 font-semibold">Age:</span> {pet.age} {parseInt(pet.age) > 1 ? 'years' : 'year'}</p>
+                                            <p><span className="text-slate-500 font-semibold">Gender:</span> {pet.gender}</p>
+                                            <p className="col-span-2 flex items-center gap-1.5 text-slate-400 truncate">
+                                                <FaMapMarkerAlt className="text-slate-500" />
+                                                <span className="truncate">{pet.location}</span>
+                                            </p>
+                                        </div>
                                     </div>
 
-                                    <div className="p-5 flex-1 flex flex-col justify-between">
+                                    <div className="flex items-center justify-between border-t border-slate-800/60 pt-4 mt-auto">
                                         <div>
-                                            <h3 className="text-xl font-bold text-white mb-1 group-hover:text-[#FF9505] transition-colors duration-200">{pet.petName}</h3>
-                                            <p className="text-slate-400 text-xs font-medium mb-4">
-                                                {pet.breed} | {pet.age} {parseInt(pet.age) > 1 ? 'years' : 'year'} old | {pet.gender}
+                                            <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Adoption Fee</p>
+                                            <p className="text-base font-black text-[#FF9505] mt-0.5">
+                                                {parseInt(pet.adoptionFee) === 0 ? "Free" : `$${pet.adoptionFee}`}
                                             </p>
-                                            <div className="space-y-2 mb-6 border-t border-slate-800/60 pt-4">
-                                                <div className="flex items-center text-slate-400 text-sm gap-2">
-                                                    <PiMapPinLineDuotone className='text-[#FF9505]' />
-                                                    <span className="truncate text-slate-300">{pet.location}</span>
-                                                </div>
-                                                <div className="flex items-center text-slate-400 text-sm gap-2">
-                                                    <span className="text-[#FF9505] font-bold"><TbCurrencyDollar /></span>
-                                                    <span className="font-semibold text-slate-300">
-                                                        {parseInt(pet.adoptionFee) === 0 || !pet.adoptionFee ? 'Free Adoption' : `$${pet.adoptionFee} adoption fee`}
-                                                    </span>
-                                                </div>
-                                            </div>
                                         </div>
-
-                                        <div className="flex items-center gap-4 mt-auto pt-4 border-t border-slate-800/40">
-                                            <Link
-                                                href={`/all-pet/${pet._id}`}
-                                                className="flex-1 text-center py-2.5 px-4 rounded-xl border border-slate-700 text-slate-300 text-sm font-semibold hover:bg-slate-800/50 hover:text-white hover:border-slate-600 transition-all duration-200 outline-none">
-                                                View Details
-                                            </Link>
-
-                                            <Link
-                                                href={`/adopt/${pet._id}`}
-                                                className="flex-1 text-center py-2.5 px-4 rounded-xl bg-[#FF9505] text-black text-sm font-bold shadow-lg shadow-[#FF9505]/10 hover:bg-[#ff9d1c] hover:shadow-[#FF9505]/20 transition-all duration-200 outline-none">
-                                                Adopt Now
-                                            </Link>
-                                        </div>
+                                        <Link
+                                            href={`/all-pet/${pet._id}`}
+                                            className="bg-[#FF9505] text-black text-xs font-bold px-4 py-2 rounded-xl hover:bg-[#ff9d1c] transition-colors shadow-md shadow-[#FF9505]/10 cursor-pointer"
+                                        >
+                                            View Details
+                                        </Link>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );
 };
 
-export default AllPetPage;
+export default AllPetsPage;

@@ -1,9 +1,44 @@
-import React from 'react';
+"use client";
+
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { FaPaw, FaListUl, FaPlusCircle, FaHeart, FaUserAlt } from 'react-icons/fa';
+import { useRouter, usePathname } from 'next/navigation';
+import { FaPaw, FaListUl, FaPlusCircle, FaUserAlt, FaHome } from 'react-icons/fa';
 import { IoGitPullRequestSharp } from 'react-icons/io5';
+import { authClient } from '@/lib/auth-client';
+import LoadingPage from '@/components/LoadingPage';
 
 const DashboardLayout = ({ children }) => {
+    const { data: session, isPending } = authClient.useSession();
+    const router = useRouter();
+    const pathname = usePathname();
+
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    useEffect(() => {
+        if (mounted && !isPending && !session) {
+            router.replace(`/login?redirect=${pathname}`);
+        }
+    }, [session, isPending, router, pathname, mounted]);
+
+    if (!mounted || isPending) {
+        return (
+            <div className="min-h-screen bg-[#0b1329] flex items-center justify-center">
+                <LoadingPage />
+            </div>
+        );
+    }
+
+    if (!session) {
+        return null;
+    }
+
+    const user = session.user;
+
     return (
         <div className="drawer lg:drawer-open">
             <input id="dashboard-drawer" type="checkbox" className="drawer-toggle" />
@@ -67,13 +102,13 @@ const DashboardLayout = ({ children }) => {
                                     <span>My Requests</span>
                                 </Link>
                             </li>
-                            <li>
+                            <li className="pt-6 border-t border-slate-800 mt-6">
                                 <Link
-                                    href="/dashboard/favorites"
-                                    className="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 hover:bg-[#FF9505]/10 hover:text-[#FF9505] focus:bg-[#FF9505] focus:text-black active:scale-95"
+                                    href="/"
+                                    className="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 hover:bg-slate-800 hover:text-white"
                                 >
-                                    <FaHeart className="text-lg" />
-                                    <span>Favorites</span>
+                                    <FaHome className="text-lg" />
+                                    <span>Back to Home</span>
                                 </Link>
                             </li>
                         </ul>
@@ -83,7 +118,7 @@ const DashboardLayout = ({ children }) => {
                             <FaUserAlt />
                         </div>
                         <div className="flex flex-col min-w-0">
-                            <span className="text-sm font-bold text-white truncate">Ibrahim Khalilullah</span>
+                            <span className="text-sm font-bold text-white truncate">{user.name || "User"}</span>
                             <span className="text-xs text-slate-500 truncate">Dashboard User</span>
                         </div>
                     </div>

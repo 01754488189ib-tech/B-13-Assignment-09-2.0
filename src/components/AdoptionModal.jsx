@@ -1,11 +1,9 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
-const AdoptionForm = ({ pet, currentUser }) => {
-    const router = useRouter();
+const AdoptionForm = ({ pet, currentUser, initialStatus, onSuccess }) => {
     const [isPending, setIsPending] = useState(false);
 
     const handleAdoptionSubmit = async (e) => {
@@ -17,6 +15,7 @@ const AdoptionForm = ({ pet, currentUser }) => {
         const adoptionData = {
             petId: pet._id,
             petName: pet.petName,
+            ownerEmail: pet.ownerEmail,
             userName: currentUser.name,
             userEmail: currentUser.email,
             pickupDate: formData.get('pickupDate'),
@@ -28,15 +27,18 @@ const AdoptionForm = ({ pet, currentUser }) => {
             const response = await fetch('http://localhost:5000/adoptions', {
                 method: 'POST',
                 headers: { 'content-type': 'application/json' },
-                body: JSON.stringify(adoptionData)
+                body: JSON.stringify(adoptionData),
+                credentials: 'include'
             });
 
             const result = await response.json();
 
-            if (response.ok) {
-                toast.success("Adoption request submitted successfully!");
+            if (response.ok && result.success) {
+                toast.success(result.message || "Adoption request submitted successfully!");
                 form.reset();
-                router.refresh();
+                if (onSuccess) {
+                    onSuccess();
+                }
             } else {
                 toast.error(result.message || "Failed to submit request.");
             }
@@ -81,33 +83,52 @@ const AdoptionForm = ({ pet, currentUser }) => {
                         className="w-full bg-[#0f172a] border border-slate-800 rounded-xl px-4 py-2.5 text-slate-400 text-sm outline-none cursor-not-allowed"
                     />
                 </div>
-                <div>
-                    <label className="block text-xs font-semibold text-slate-300 uppercase mb-1.5">Pickup Date</label>
-                    <input
-                        type="date"
-                        name="pickupDate"
-                        required
-                        className="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-[#FF9505] transition-colors"
-                    />
-                </div>
-                <div>
-                    <label className="block text-xs font-semibold text-slate-300 uppercase mb-1.5">Message to Owner</label>
-                    <textarea
-                        name="message"
-                        rows="3"
-                        placeholder="Why do you want to adopt this pet?"
-                        required
-                        className="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-[#FF9505] transition-colors resize-none"
-                    ></textarea>
-                </div>
 
-                <button
-                    type="submit"
-                    disabled={isPending}
-                    className="w-full mt-2 py-3 px-4 rounded-xl bg-[#FF9505] text-black text-sm font-bold shadow-lg shadow-[#FF9505]/10 hover:bg-[#ff9d1c] transition-all duration-200 outline-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    {isPending ? "Submitting..." : "Submit Adoption Request"}
-                </button>
+                {!initialStatus && (
+                    <>
+                        <div>
+                            <label className="block text-xs font-semibold text-slate-300 uppercase mb-1.5">Pickup Date</label>
+                            <input
+                                type="date"
+                                name="pickupDate"
+                                required
+                                className="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-[#FF9505] transition-colors"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-semibold text-slate-300 uppercase mb-1.5">Message to Owner</label>
+                            <textarea
+                                name="message"
+                                rows="3"
+                                placeholder="Why do you want to adopt this pet?"
+                                required
+                                className="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-[#FF9505] transition-colors resize-none"
+                            ></textarea>
+                        </div>
+                    </>
+                )}
+
+                {initialStatus === "Approved" ? (
+                    <div className="w-full py-3 px-4 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-center text-sm font-bold uppercase tracking-wider">
+                        Your Request Was Approved!
+                    </div>
+                ) : initialStatus === "Rejected" ? (
+                    <div className="w-full py-3 px-4 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 text-center text-sm font-bold uppercase tracking-wider">
+                        Your Request Was Rejected
+                    </div>
+                ) : initialStatus === "pending" ? (
+                    <div className="w-full py-3 px-4 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 text-center text-sm font-bold uppercase tracking-wider">
+                        Request Pending Approval
+                    </div>
+                ) : (
+                    <button
+                        type="submit"
+                        disabled={isPending}
+                        className="w-full mt-2 py-3 px-4 rounded-xl bg-[#FF9505] text-black text-sm font-bold shadow-lg shadow-[#FF9505]/10 hover:bg-[#ff9d1c] transition-all duration-200 outline-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                        {isPending ? "Submitting..." : "Submit Adoption Request"}
+                    </button>
+                )}
             </form>
         </div>
     );

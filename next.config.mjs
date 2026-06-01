@@ -4,15 +4,16 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'cdn2.thecatapi.com',
-        pathname: '/**',
+        hostname: '**',
+      },
+      {
+        protocol: 'http',
+        hostname: '**',
       },
     ],
   },
   reactCompiler: true,
-  experimental: {
-    serverComponentsExternalPackages: ['@better-auth/kysely-adapter', 'kysely'],
-  },
+  serverExternalPackages: ['@better-auth/kysely-adapter', 'kysely', 'mongodb'],
 };
 
 export default nextConfig;

@@ -2,21 +2,28 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { FaEdit, FaTrashAlt, FaEye, FaExclamationTriangle } from 'react-icons/fa';
+import { FaEdit, FaTrashAlt, FaEye, FaExclamationTriangle, FaUserAlt } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import { authClient } from '@/lib/auth-client';
 import { Button, Modal } from "@heroui/react";
 import LoadingPage from '@/components/LoadingPage';
 
 const MyListings = () => {
+    const { data: session, isPending: sessionLoading } = authClient.useSession();
+    const myEmail = session?.user?.email || "";
+
     const [listings, setListings] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
     const [isOpen, setIsOpen] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState({ id: null, name: "" });
 
-    const myEmail = "01754488189ib@gmail.com";
+    const [isReqOpen, setIsReqOpen] = useState(false);
+    const [activePetRequests, setActivePetRequests] = useState([]);
+    const [selectedPetId, setSelectedPetId] = useState(null);
 
     const fetchMyPets = async () => {
+        if (!myEmail) return;
         try {
             const response = await fetch('http://localhost:5000/pets');
             if (response.ok) {
@@ -35,8 +42,50 @@ const MyListings = () => {
     };
 
     useEffect(() => {
-        fetchMyPets();
-    }, []);
+        if (!sessionLoading && myEmail) {
+            fetchMyPets();
+        }
+    }, [myEmail, sessionLoading]);
+
+    const openRequestsModal = async (petId) => {
+        setSelectedPetId(petId);
+        try {
+            const res = await fetch(`http://localhost:5000/adoptions/${petId}`, {
+                credentials: 'include'
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setActivePetRequests(data);
+                setIsReqOpen(true);
+            } else {
+                toast.error("Failed to fetch requests.");
+            }
+        } catch (err) {
+            toast.error("Server connection failed.");
+        }
+    };
+
+    const handleStatusAction = async (requestId, statusName) => {
+        try {
+            const res = await fetch(`http://localhost:5000/adoptions-status/${requestId}`, {
+                method: 'PATCH',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ petId: selectedPetId, status: statusName }),
+                credentials: 'include'
+            });
+            const result = await res.json();
+
+            if (res.ok && result.success) {
+                toast.success(result.message);
+                setIsReqOpen(false);
+                fetchMyPets();
+            } else {
+                toast.error(result.message || "Action failed.");
+            }
+        } catch (err) {
+            toast.error("Action error occurred.");
+        }
+    };
 
     const openDeleteModal = (id, petName) => {
         setDeleteTarget({ id, name: petName });
@@ -46,8 +95,9 @@ const MyListings = () => {
     const handleConfirmDelete = async () => {
         const { id, name } = deleteTarget;
         try {
-            const response = await fetch(`http://localhost:5000/pets/${id}`, {
+            const response = await fetch(`http://localhost:5000/pets/${id}?userEmail=${myEmail}`, {
                 method: 'DELETE',
+                credentials: 'include'
             });
             const result = await response.json();
 
@@ -56,7 +106,7 @@ const MyListings = () => {
                 setListings(listings.filter(pet => pet._id !== id));
                 setIsOpen(false);
             } else {
-                toast.error("Failed to delete from server.");
+                toast.error(result.error || "Failed to delete from server.");
             }
         } catch (error) {
             console.error("Delete error:", error);
@@ -64,15 +114,18 @@ const MyListings = () => {
         }
     };
 
+    if (sessionLoading) {
+        return <div className="text-center py-20 text-slate-400"><LoadingPage /></div>;
+    }
+
     return (
         <div className="w-full max-w-7xl mx-auto px-4 py-8 text-slate-300 min-h-screen">
-
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 border-b border-slate-800 pb-4">
                 <div>
                     <h2 className="text-2xl md:text-3xl font-black text-white">My Listings</h2>
                     <p className="text-xs md:text-sm text-slate-500 mt-1">Manage and track your hosted pets</p>
                 </div>
-                <Link href="/dashboard/add-pets" className="bg-[#FF9505] text-black px-4 py-2 rounded-xl text-xs font-bold hover:bg-[#ff9d1c] transition-all shadow-lg shadow-[#FF9505]/10 whitespace-nowrap">
+                <Link href="/dashboard/add-pets" className="bg-[#FF9505] text-black px-4 py-2 rounded-xl text-xs font-bold hover:bg-[#ff9d1c] transition-all shadow-lg shadow-[#FF9505]/10 whitespace-nowrap cursor-pointer">
                     + Add New Pet
                 </Link>
             </div>
@@ -144,12 +197,24 @@ const MyListings = () => {
                                             {item.adoptionFee === "0" || !item.adoptionFee ? "Free" : `$${item.adoptionFee}`}
                                         </td>
                                         <td className="p-4">
-                                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400">
-                                                Available
-                                            </span>
+                                            {item.status === "adopted" ? (
+                                                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#FF9505]/10 text-[#FF9505] border border-[#FF9505]/20">
+                                                    Adopted
+                                                </span>
+                                            ) : (
+                                                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                                    Available
+                                                </span>
+                                            )}
                                         </td>
                                         <td className="p-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
+                                                <button
+                                                    onClick={() => openRequestsModal(item._id)}
+                                                    className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 rounded-lg border border-slate-700 transition-colors cursor-pointer"
+                                                >
+                                                    Requests ({item.status === "adopted" ? "Closed" : "Manage"})
+                                                </button>
 
                                                 <Link href={`/all-pet/${item._id}`} className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 transition-colors" title="View Details">
                                                     <FaEye size={14} />
@@ -161,12 +226,11 @@ const MyListings = () => {
 
                                                 <button
                                                     onClick={() => openDeleteModal(item._id, item.petName)}
-                                                    className="p-2 bg-slate-800 hover:bg-rose-500/10 hover:text-rose-400 rounded-lg text-slate-300 transition-colors"
+                                                    className="p-2 bg-slate-800 hover:bg-rose-500/10 hover:text-rose-400 rounded-lg text-slate-300 transition-colors cursor-pointer"
                                                     title="Delete"
                                                 >
                                                     <FaTrashAlt size={14} />
                                                 </button>
-
                                             </div>
                                         </td>
                                     </tr>
@@ -177,11 +241,71 @@ const MyListings = () => {
                 </div>
             </div>
 
+            <Modal isOpen={isReqOpen} onOpenChange={(open) => setIsReqOpen(open)}>
+                <Modal.Backdrop variant="blur">
+                    <Modal.Container>
+                        <Modal.Dialog className="max-w-xl w-full bg-[#0b1329] border border-slate-800 text-slate-300 rounded-xl">
+                            <Modal.Header className="pt-6 px-6">
+                                <Modal.Heading className="text-white text-lg font-bold">Adoption Requests Received</Modal.Heading>
+                            </Modal.Header>
+                            <Modal.Body className="p-6 max-h-[60vh] overflow-y-auto">
+                                {activePetRequests.length === 0 ? (
+                                    <p className="text-center text-slate-500 text-sm py-4">No adoption requests received for this pet yet.</p>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {activePetRequests.map((req) => (
+                                            <div key={req._id} className="bg-[#0f172a] border border-slate-800/80 p-4 rounded-xl flex flex-col gap-3">
+                                                <div className="flex justify-between items-start border-b border-slate-800/60 pb-2">
+                                                    <div>
+                                                        <h4 className="font-bold text-white flex items-center gap-1.5 text-sm">
+                                                            <FaUserAlt className="text-slate-500 text-xs" /> {req.userName}
+                                                        </h4>
+                                                        <p className="text-xs text-slate-500 mt-0.5">{req.userEmail}</p>
+                                                    </div>
+                                                    <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${req.status === "Approved" ? "bg-emerald-500/10 text-emerald-400" :
+                                                        req.status === "Rejected" ? "bg-rose-500/10 text-rose-400" : "bg-amber-500/10 text-amber-400"
+                                                        }`}>
+                                                        {req.status}
+                                                    </span>
+                                                </div>
+                                                <div className="text-xs space-y-1">
+                                                    <p className="text-slate-400"><span className="text-slate-500 font-semibold">Pickup Date:</span> {req.pickupDate}</p>
+                                                    <p className="text-slate-300 italic"><span className="text-slate-500 font-semibold not-italic">Message:</span> "{req.message}"</p>
+                                                </div>
+
+                                                {req.status === "pending" && !activePetRequests.some(r => r.status === "Approved") && (
+                                                    <div className="flex gap-2 justify-end mt-1">
+                                                        <button
+                                                            onClick={() => handleStatusAction(req._id, "Rejected")}
+                                                            className="px-3 py-1 bg-rose-600/10 text-rose-400 border border-rose-500/20 text-xs font-bold rounded-lg hover:bg-rose-600 hover:text-white transition-all cursor-pointer"
+                                                        >
+                                                            Reject
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleStatusAction(req._id, "Approved")}
+                                                            className="px-3 py-1 bg-emerald-500 text-black text-xs font-black rounded-lg hover:bg-emerald-400 transition-all cursor-pointer"
+                                                        >
+                                                            Confirm
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </Modal.Body>
+                            <Modal.Footer className="p-4 bg-slate-900/40 border-t border-slate-800/50 flex justify-end">
+                                <Button onClick={() => setIsReqOpen(false)} className="bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold px-4 py-2 cursor-pointer">
+                                    Close
+                                </Button>
+                            </Modal.Footer>
+                        </Modal.Dialog>
+                    </Modal.Container>
+                </Modal.Backdrop>
+            </Modal>
+
             <Modal isOpen={isOpen} onOpenChange={(open) => setIsOpen(open)}>
-                <Modal.Backdrop
-                    className="bg-linear-to-t from-black/80 via-black/40 to-transparent dark:from-zinc-950/90 dark:via-zinc-900/50"
-                    variant="blur"
-                >
+                <Modal.Backdrop variant="blur">
                     <Modal.Container>
                         <Modal.Dialog className="sm:max-w-[380px] bg-[#0b1329] border border-slate-800 text-slate-300 rounded-xl">
                             <Modal.Header className="items-center text-center flex flex-col pt-6">
@@ -198,23 +322,21 @@ const MyListings = () => {
                             <Modal.Footer className="flex gap-3 p-6 w-full">
                                 <Button
                                     onClick={() => setIsOpen(false)}
-                                    className="flex-1 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-semibold"
+                                    className="flex-1 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-semibold cursor-pointer"
                                 >
                                     Cancel
                                 </Button>
                                 <Button
                                     onClick={handleConfirmDelete}
-                                    className="flex-1 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-rose-600/20"
+                                    className="flex-1 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-rose-600/20 cursor-pointer"
                                 >
                                     Delete
                                 </Button>
                             </Modal.Footer>
-                            <Modal.CloseTrigger />
                         </Modal.Dialog>
                     </Modal.Container>
                 </Modal.Backdrop>
             </Modal>
-
         </div>
     );
 };

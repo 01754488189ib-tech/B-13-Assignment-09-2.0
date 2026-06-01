@@ -50,7 +50,7 @@ const Petcare = () => {
     ];
 
     return (
-        <div className="text-slate-300 min-h-screen py-16 px-4 md:px-8 font-sans selection:bg-[#FF9505]/20 selection:text-[#FF9505]">
+        <div className="text-slate-300 min-h-screen py-16 px-4 md:px-8 font-sans">
             <div className="max-w-6xl mx-auto">
 
                 <header className="text-center max-w-2xl mx-auto mb-16">
@@ -94,7 +94,7 @@ const Petcare = () => {
                         <div className="relative h-full border border-slate-800/80 bg-gradient-to-tr from-[#134e5e]/20 via-[#1e293b]/40 to-[#0f172a] p-6 sm:p-10 rounded-3xl shadow-2xl flex justify-center items-center backdrop-blur-sm transition-all duration-300 hover:border-slate-700">
                             <div className="relative w-full max-w-md lg:max-w-full aspect-[16/19] flex items-center justify-center">
                                 <Image
-                                    src="/pngwing.com (5).png"
+                                    src="/pngwing.com (1).png"
                                     alt="Pet Adoption Hero Banner"
                                     fill
                                     sizes="(max-w-1024px) 100vw, 600px"
