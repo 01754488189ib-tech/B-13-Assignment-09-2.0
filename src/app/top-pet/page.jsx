@@ -12,7 +12,7 @@ const TopPetPage = () => {
     useEffect(() => {
         const fetchFeaturedPets = async () => {
             try {
-                const response = await fetch('http://localhost:5000/pets');
+                const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/pets`);
                 if (response.ok) {
                     const data = await response.json();
                     const available = data.filter(pet => pet.status !== 'adopted');

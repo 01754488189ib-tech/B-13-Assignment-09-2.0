@@ -16,7 +16,7 @@ const Navbar = () => {
             fetchOptions: {
                 onSuccess: async () => {
                     try {
-                        await fetch('http://localhost:5000/logout', {
+                        await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/logout`, {
                             method: 'POST',
                             credentials: 'include'
                         });

@@ -25,7 +25,9 @@ const PetDetailsPage = ({ params }) => {
     const fetchDetails = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`http://localhost:5000/pets/${id}`);
+            const apiBase = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+
+            const res = await fetch(`${apiBase}/pets/${id}`);
             if (!res.ok) {
                 setErrorMsg(`Failed to load data: ${res.status}`);
                 return;
@@ -34,7 +36,7 @@ const PetDetailsPage = ({ params }) => {
             setPet(data);
 
             if (currentUser?.email) {
-                const adoptionsRes = await fetch(`http://localhost:5000/adoptions/${id}`, {
+                const adoptionsRes = await fetch(`${apiBase}/adoptions/${id}`, {
                     credentials: 'include'
                 });
                 if (adoptionsRes.ok) {

@@ -25,7 +25,8 @@ const MyListings = () => {
     const fetchMyPets = async () => {
         if (!myEmail) return;
         try {
-            const response = await fetch('http://localhost:5000/pets');
+            const apiBase = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+            const response = await fetch(`${apiBase}/pets`);
             if (response.ok) {
                 const data = await response.json();
                 const myFilteredPets = data.filter(pet => pet.ownerEmail === myEmail);
@@ -50,7 +51,8 @@ const MyListings = () => {
     const openRequestsModal = async (petId) => {
         setSelectedPetId(petId);
         try {
-            const res = await fetch(`http://localhost:5000/adoptions/${petId}`, {
+            const apiBase = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+            const res = await fetch(`${apiBase}/adoptions/${petId}`, {
                 credentials: 'include'
             });
             if (res.ok) {
@@ -67,7 +69,8 @@ const MyListings = () => {
 
     const handleStatusAction = async (requestId, statusName) => {
         try {
-            const res = await fetch(`http://localhost:5000/adoptions-status/${requestId}`, {
+            const apiBase = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+            const res = await fetch(`${apiBase}/adoptions-status/${requestId}`, {
                 method: 'PATCH',
                 headers: { 'content-type': 'application/json' },
                 body: JSON.stringify({ petId: selectedPetId, status: statusName }),
@@ -95,7 +98,8 @@ const MyListings = () => {
     const handleConfirmDelete = async () => {
         const { id, name } = deleteTarget;
         try {
-            const response = await fetch(`http://localhost:5000/pets/${id}?userEmail=${myEmail}`, {
+            const apiBase = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+            const response = await fetch(`${apiBase}/pets/${id}?userEmail=${myEmail}`, {
                 method: 'DELETE',
                 credentials: 'include'
             });

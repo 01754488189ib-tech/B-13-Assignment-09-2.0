@@ -24,7 +24,7 @@ const AdoptionForm = ({ pet, currentUser, initialStatus, onSuccess }) => {
         };
 
         try {
-            const response = await fetch('http://localhost:5000/adoptions', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/adoptions`, {
                 method: 'POST',
                 headers: { 'content-type': 'application/json' },
                 body: JSON.stringify(adoptionData),

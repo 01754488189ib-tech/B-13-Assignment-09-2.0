@@ -21,7 +21,8 @@ const MyRequestsPage = () => {
     const fetchMyRequests = async () => {
         if (!myEmail) return;
         try {
-            const res = await fetch(`http://localhost:5000/user-adoptions/${myEmail}`, {
+            const apiBase = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+            const res = await fetch(`${apiBase}/user-adoptions/${myEmail}`, {
                 credentials: 'include'
             });
             if (res.ok) {
@@ -47,7 +48,8 @@ const MyRequestsPage = () => {
         if (!targetRequest) return;
 
         try {
-            const res = await fetch(`http://localhost:5000/adoptions/${targetRequest._id}`, {
+            const apiBase = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+            const res = await fetch(`${apiBase}/adoptions/${targetRequest._id}`, {
                 method: 'DELETE',
                 credentials: 'include'
             });

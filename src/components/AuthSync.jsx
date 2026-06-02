@@ -10,7 +10,8 @@ export default function AuthSync() {
         const syncJWT = async () => {
             if (session?.user?.email) {
                 try {
-                    await fetch('http://localhost:5000/jwt', {
+                    const apiBase = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+                    await fetch(`${apiBase}/jwt`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email: session.user.email }),

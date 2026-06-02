@@ -20,7 +20,7 @@ const EditPet = ({ params }) => {
     useEffect(() => {
         const fetchPetDetails = async () => {
             try {
-                const response = await fetch(`http://localhost:5000/pets/${id}`);
+                const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/pets/${id}`);
                 if (response.ok) {
                     const data = await response.json();
 
@@ -67,7 +67,7 @@ const EditPet = ({ params }) => {
         };
 
         try {
-            const response = await fetch(`http://localhost:5000/pets/${id}?userEmail=${myEmail}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/pets/${id}?userEmail=${myEmail}`, {
                 method: 'PUT',
                 headers: { 'content-type': 'application/json' },
                 body: JSON.stringify(updatedPet),

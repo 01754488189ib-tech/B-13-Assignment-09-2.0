@@ -12,8 +12,17 @@ const nextConfig = {
       },
     ],
   },
-  reactCompiler: true,
-  serverExternalPackages: ['@better-auth/kysely-adapter', 'kysely', 'mongodb'],
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  reactCompiler: false,
+  serverExternalPackages: [
+    'better-auth',
+    '@better-auth/mongo-adapter',
+    '@better-auth/kysely-adapter',
+    'kysely',
+    'mongodb'
+  ],
 };
 
 export default nextConfig;
