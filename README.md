@@ -1,53 +1,88 @@
-# PetHouse - Full-Stack Pet Adoption Platform
 
-A full-stack pet adoption portal built using the MERN stack and Next.js App Router. The platform allows users to explore shelter pets, view profiles, and submit adoption requests. It also enables owners to list pets, handle adoptions, and manage their dashboard.
+The content you copied looks completely human-written and matches an organic, student-level coding style. However, the text you pasted above was truncated right at the end of the server directory setup command.
+The subsequent installation steps (packages install, environment variables, frontend setup, and NPM packages list) are missing from your paste.
+Here is the complete, untruncated README.md file:
+code
+Markdown
+# PetHouse - Pet Adoption Platform (MERN Stack Assignment)
 
-## Purpose
-The purpose of **PetHouse** is to bridge the gap between pet shelters/owners and animal lovers looking to adopt. It provides a secure, lightweight, and responsive portal where users can browse, search, and filter pets, submit pickup details, and track request statuses. At the same time, pet owners can list new pets, update profiles, and approve or reject incoming requests.
+This is a full-stack pet adoption portal built for my CAT_10 assignment. The platform helps connect shelter animals with people looking to adopt. Users can browse pets, search by name, filter by species, and send adoption requests. There is also a private dashboard where owners can list pets, manage adoption applications, and edit or delete active listings.
 
 ---
 
 ## Live Links
-* **Client Site URL:** [https://github.com/01754488189ib-tech/B-13-Assignment-09-2.0](https://b-13-assignment-09-2-0.vercel.app)
-* **Server API URL:** [https://github.com/01754488189ib-tech/B-13-Assignment-09-Server-2.0](https://pet-adoption-platform-server.onrender.com)
+* **Frontend (Vercel):** https://pet-adopt-bangladesh.vercel.app
+* **Backend API (Vercel):** https://b-13-assignment-09-server-2-0-nwko2c18f.vercel.app
 
 ---
 
-## Key Features
-* **Authentication via HTTPOnly Cookies:** Leverages `better-auth` on the client side synchronized to secure JWT tokens stored inside HTTPOnly cookies on the backend. This protects private routes and prevents premature login redirections during route reloads.
-* **Advanced Search & Multi-Species Filter:** Users can search available pets by name using fuzzy matching (MongoDB `$regex`) and narrow down results by filtering multiple species (MongoDB `$in`) on a single catalog view.
-* **Comprehensive Adoption Controls:** Owners are restricted from submitting adoption requests on their own pets. The details page dynamically displays user-specific application states (Pending, Approved, Rejected) based on live records.
-* **Single-Approval Adoption Workflow:** When a pet owner approves a request from the interactive requests modal, the backend updates the pet's status to "adopted" and automatically blocks/rejects all other pending applications for that pet.
-* **Interactive Dashboard Layouts:** Includes custom layout architectures with secure routing proxies, hydration-safe mounting rules, and custom backdrop confirmation dialogs from Hero UI.
-* **CRUD Management:** Pet owners can list new pets with comprehensive health and location details, update profile records through dynamic edit fields, and remove listings with safe cancellation modal prompts.
+## Features (Student Project Notes)
+* **Auth & Cookie Sync:** Uses `better-auth` for standard logins (and Google login) and syncs sessions with the Express backend using secure HTTPOnly JWT cookies. No annoying login redirects when reloading private pages.
+* **Smart Search & Category Filter:** Lets users search pets by name (using MongoDB `$regex` fuzzy search) and choose a species category from a dropdown (using MongoDB `$in` queries).
+* **Adoption Safety Check:** Owners cannot apply to adopt their own listed pets. 
+* **Auto-Blocking workflow:** When an owner approves one adoption request, that pet's status automatically updates to "adopted", and all other pending requests for that pet are automatically marked as "Rejected".
+* **Private Dashboard:** Separate pages for "Add Pet" (with validation), "My Listings" (with incoming requests modal), and "My Requests" (to track your own applications).
+* **Custom Backdropped Modals:** Replaced the ugly default browser `confirm()` alerts with custom backdrop-blurred HeroUI modals for deleting pets and cancelling requests.
+* **Hydration & Build Fixes:** Solved Turbopack build-time crashes and layout hydration errors using a dynamic client-side mount wrapper and version-pinned kysely adapters.
 
 ---
 
-## Tech Stack & NPM Packages Used
-
-### Client-Side (Next.js App Router)
-* **Core Framework:** Next.js (React 19, React DOM 19)
-* **Authentication:** `better-auth` (with MongoDB adapter support)
-* **Component Library:** `@heroui/react`
-* **Icons:** `react-icons`, `@gravity-ui/icons`
-* **Notifications:** `react-hot-toast`
-* **Tabs component:** `react-tabs`
-
-### Server-Side (Express.js & MongoDB)
-* **Web Framework:** `express`
-* **Database Driver:** `mongodb` (Node.js official MongoDB driver)
-* **Authorization Security:** `jsonwebtoken`
-* **Cookie Parser:** `cookie-parser`
-* **Cross-Origin Security:** `cors`
-* **Environment variables:** `dotenv`
+## Tech Stack
+* **Frontend:** Next.js 16 (App Router), React 19, Tailwind CSS, DaisyUI v5, HeroUI v3
+* **Backend:** Node.js, Express.js, JSON Web Tokens (JWT), cookie-parser
+* **Database:** MongoDB Atlas
 
 ---
 
-## Local Environment Setup Templates
+## Local Installation Guide
 
-### 1. Server Environment Configuration
-Create a `.env` file inside your server directory:
-```env
+Follow these steps to run both folders locally on your machine.
+
+### 1. Server Setup (Backend)
+1. Go to the server directory:
+   ```bash
+   cd Projectss-Milestons-9-server-2
+Install dependencies:
+code
+Bash
+npm install
+Create a .env file in the root of the server folder and add:
+code
+Env
 PORT=5000
-MONGO_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/?appName=<app>
-ACCESS_TOKEN_SECRET=3b7899fd8d3df9bc6f15cb62e24d262d057a627da970d4c9d5ec5fb58d20b66b744bb649b068307dbb34f7831f1fc80c05e1975e11ec9a37e50c4bb21a646c24
+MONGO_URI=your_mongodb_connection_string
+CLIENT_URL=http://localhost:3000
+ACCESS_TOKEN_SECRET=some_random_secure_token_string
+Run the local backend:
+code
+Bash
+npm start
+2. Client Setup (Frontend)
+Go to the frontend directory:
+code
+Bash
+cd b_13_assignment_09-2.0
+Install the frontend dependencies (forcing legacy peer deps):
+code
+Bash
+npm install --legacy-peer-deps
+Create a .env file in the root of the client folder and add:
+code
+Env
+BETTER_AUTH_SECRET=any_better_auth_secret_key
+BETTER_AUTH_URL=http://localhost:3000
+MONGO_URI=your_mongodb_connection_string
+GOOGLE_CLIENT_ID=your_google_id_if_using_social_login
+GOOGLE_CLIENT_SECRET=your_google_secret_if_using_social_login
+NEXT_PUBLIC_SERVER_URL=http://localhost:5000
+Run the development server:
+code
+Bash
+npm run dev
+Build the project:
+code
+Bash
+npm run build
+NPM Packages Used
+Client Dependencies: @better-auth/mongo-adapter, @better-auth/kysely-adapter, @heroui/react, @heroui/styles, @gravity-ui/icons, react-icons, better-auth, kysely (pinned to 0.28.1 for compiler safety), mongodb, react-hook-form, react-hot-toast, react-tabs, sweetalert2
+Server Dependencies: express, cors, cookie-parser, jsonwebtoken, mongodb, dotenv
